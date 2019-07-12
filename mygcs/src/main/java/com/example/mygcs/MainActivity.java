@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.UiThread;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,7 +16,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.MapFragment;
+import com.naver.maps.map.NaverMap;
+import com.naver.maps.map.OnMapReadyCallback;
+import com.naver.maps.map.overlay.Marker;
 import com.o3dr.android.client.ControlTower;
 import com.o3dr.android.client.Drone;
 import com.o3dr.android.client.interfaces.DroneListener;
@@ -33,7 +39,7 @@ import com.o3dr.services.android.lib.drone.property.Speed;
 import com.o3dr.services.android.lib.drone.property.Type;
 import com.o3dr.services.android.lib.gcs.link.LinkConnectionStatus;
 
-public class MainActivity extends AppCompatActivity implements DroneListener, TowerListener, LinkListener {
+public class MainActivity extends AppCompatActivity implements DroneListener, TowerListener, LinkListener, OnMapReadyCallback{
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -42,6 +48,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     private Drone drone;
     private ControlTower controlTower;
     private final Handler handler = new Handler();
+    public LatLong vehiclePosition;
+    public LatLng GPSvalue;
+    private NaverMap mMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             mNaverMapFragment = MapFragment.newInstance();
             fm.beginTransaction().add(R.id.map, mNaverMapFragment).commit();
         }
+        mNaverMapFragment.getMapAsync(this);
     }
 
     @Override
@@ -82,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
     @Override
     public void onDroneEvent(String event, Bundle extras) {
+
         switch (event) {
             case AttributeEvent.STATE_CONNECTED:
                 alertUser("Drone Connected");
@@ -101,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
             case AttributeEvent.ALTITUDE_UPDATED:
                 updateAltitude();
+                GPSLatLngUpdate();
                 break;
 
             case AttributeEvent.HOME_UPDATED:
@@ -205,5 +217,22 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         double dy = pointA.getLongitude() - pointB.getLongitude();
         double dz = pointA.getAltitude() - pointB.getAltitude();
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
+    public void GPSLatLngUpdate(){
+        Gps droneGps = this.drone.getAttribute(AttributeType.GPS);
+        vehiclePosition = droneGps.getPosition();
+        GPSvalue = (new LatLng(vehiclePosition.getLatitude(), vehiclePosition.getLongitude()));
+
+        Marker marker = new Marker();
+        marker.setPosition(GPSvalue);
+        marker.setMap(mMap);
+
+        Log.d("GPS값 : ", String.valueOf(GPSvalue));
+    }
+
+    @Override
+    public void onMapReady(@NonNull NaverMap naverMap) {
+        mMap = naverMap;
     }
 }

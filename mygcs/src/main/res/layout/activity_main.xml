@@ -37,6 +37,7 @@
         android:layout_alignBottom="@+id/map"
         android:layout_marginEnd="79dp"
         android:layout_marginBottom="189dp"
+        android:textColor="@color/colorAccent"
         android:textSize="30sp" />
 
     <TextView
@@ -47,6 +48,7 @@
         android:layout_alignBottom="@+id/map"
         android:layout_marginEnd="94dp"
         android:layout_marginBottom="324dp"
+        android:textColor="@color/colorAccent"
         android:textSize="30sp" />
 
     <TextView
@@ -58,6 +60,7 @@
         android:layout_marginEnd="279dp"
         android:layout_marginBottom="324dp"
         android:text="Altitude :"
+        android:textColor="@color/colorAccent"
         android:textSize="30sp" />
 
     <TextView
@@ -69,6 +72,7 @@
         android:layout_marginEnd="263dp"
         android:layout_marginBottom="189dp"
         android:text="Distance :"
+        android:textColor="@color/colorAccent"
         android:textSize="30sp" />
 
     <TextView
@@ -78,6 +82,7 @@
         android:layout_alignBottom="@+id/map"
         android:layout_marginBottom="259dp"
         android:text="Speed :"
+        android:textColor="@color/colorAccent"
         android:textSize="30sp" />
 
     <TextView
@@ -88,6 +93,7 @@
         android:layout_alignBottom="@+id/map"
         android:layout_marginEnd="93dp"
         android:layout_marginBottom="261dp"
+        android:textColor="@color/colorAccent"
         android:textSize="30sp" />
 
 </RelativeLayout>
