@@ -9,23 +9,52 @@
     <FrameLayout
         android:id="@+id/map"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="0dp"
-        tools:layout_editor_absoluteX="-56dp"
-        tools:layout_editor_absoluteY="-194dp">
+        android:layout_height="match_parent">
 
     </FrameLayout>
 
+    <Spinner
+        android:id="@+id/modeSelect"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_column="1"
+        android:layout_alignStart="@+id/map"
+        android:layout_alignTop="@+id/map"
+        android:layout_alignParentLeft="true"
+        android:layout_marginStart="190dp"
+        android:layout_marginLeft="190dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginRight="-299dp"
+        android:layout_toLeftOf="@+id/btnConnect"
+        android:spinnerMode="dropdown" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="29dp"
+        android:alpha="50"
+        android:background="#CC000000" />
+
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="62dp"
+        android:layout_alignStart="@+id/yawText"
+        android:layout_alignTop="@+id/textView"
+        android:layout_marginStart="-516dp"
+        android:layout_marginTop="343dp"
+        android:background="#FF5722"
+        android:text="ARM" />
 
     <Button
         android:id="@+id/btnConnect"
-        android:layout_width="127dp"
+        android:layout_width="124dp"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/map"
-        android:layout_alignBottom="@+id/map"
-        android:layout_marginStart="35dp"
-        android:layout_marginBottom="567dp"
+        android:layout_alignStart="@+id/altitudeText"
+        android:layout_alignTop="@+id/map"
+        android:layout_marginStart="-306dp"
+        android:layout_marginTop="34dp"
         android:onClick="onBtnConnectTap"
         android:text="Connect" />
 
@@ -33,67 +62,154 @@
         android:id="@+id/distanceValueTextView"
         android:layout_width="177dp"
         android:layout_height="49dp"
+        android:layout_alignStart="@+id/DistanceTexst"
         android:layout_alignEnd="@+id/map"
         android:layout_alignBottom="@+id/map"
-        android:layout_marginEnd="79dp"
-        android:layout_marginBottom="189dp"
+        android:layout_marginStart="160dp"
+        android:layout_marginEnd="384dp"
+        android:layout_marginBottom="64dp"
         android:textColor="@color/colorAccent"
         android:textSize="30sp" />
 
     <TextView
         android:id="@+id/altitudeValueTextView"
-        android:layout_width="177dp"
-        android:layout_height="49dp"
-        android:layout_alignEnd="@+id/map"
-        android:layout_alignBottom="@+id/map"
-        android:layout_marginEnd="94dp"
-        android:layout_marginBottom="324dp"
+        android:layout_width="66dp"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/map"
+        android:layout_alignTop="@+id/map"
+        android:layout_marginStart="356dp"
+        android:layout_marginTop="2dp"
         android:textColor="@color/colorAccent"
-        android:textSize="30sp" />
+        android:textSize="18sp" />
 
     <TextView
         android:id="@+id/altitudeText"
-        android:layout_width="132dp"
-        android:layout_height="53dp"
-        android:layout_alignEnd="@+id/map"
-        android:layout_alignBottom="@+id/map"
-        android:layout_marginEnd="279dp"
-        android:layout_marginBottom="324dp"
-        android:text="Altitude :"
-        android:textColor="@color/colorAccent"
-        android:textSize="30sp" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/map"
+        android:layout_alignTop="@+id/map"
+        android:layout_marginStart="316dp"
+        android:layout_marginTop="1dp"
+        android:text="고도"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/VoltageText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/map"
+        android:layout_alignTop="@+id/map"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="1dp"
+        android:text="전압"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/modeText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/map"
+        android:layout_alignTop="@+id/map"
+        android:layout_marginStart="121dp"
+        android:layout_marginTop="2dp"
+        android:text="비행모드"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/voltageValueTextView"
+        android:layout_width="68dp"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/map"
+        android:layout_alignTop="@+id/map"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="1dp"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp" />
 
     <TextView
         android:id="@+id/DistanceTexst"
         android:layout_width="148dp"
         android:layout_height="51dp"
+        android:layout_alignStart="@+id/map"
         android:layout_alignEnd="@+id/map"
         android:layout_alignBottom="@+id/map"
-        android:layout_marginEnd="263dp"
-        android:layout_marginBottom="189dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="572dp"
+        android:layout_marginBottom="64dp"
         android:text="Distance :"
         android:textColor="@color/colorAccent"
         android:textSize="30sp" />
 
     <TextView
-        android:id="@+id/SpeedText"
-        android:layout_width="132dp"
-        android:layout_height="50dp"
-        android:layout_alignBottom="@+id/map"
-        android:layout_marginBottom="259dp"
-        android:text="Speed :"
+        android:id="@+id/yawText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/map"
+        android:layout_alignTop="@+id/map"
+        android:layout_marginStart="523dp"
+        android:layout_marginTop="1dp"
+        android:text="YAW"
         android:textColor="@color/colorAccent"
-        android:textSize="30sp" />
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/satelliteText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/map"
+        android:layout_alignTop="@+id/map"
+        android:layout_marginStart="641dp"
+        android:layout_marginTop="2dp"
+        android:text="위성"
+        android:textColor="@color/colorAccent"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/speedText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/map"
+        android:layout_alignTop="@+id/map"
+        android:layout_marginStart="415dp"
+        android:layout_marginTop="2dp"
+        android:text="속도"
+        android:textColor="@color/colorAccent"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/satelliteValueTextView"
+        android:layout_width="57dp"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/map"
+        android:layout_alignTop="@+id/map"
+        android:layout_marginStart="677dp"
+        android:layout_marginTop="2dp"
+        android:textColor="@color/colorAccent"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/yawalueTextView"
+        android:layout_width="75dp"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/map"
+        android:layout_alignTop="@+id/map"
+        android:layout_marginStart="565dp"
+        android:layout_marginTop="1dp"
+        android:textColor="@color/colorAccent"
+        android:textSize="18sp" />
 
     <TextView
         android:id="@+id/speedValueTextView"
-        android:layout_width="177dp"
-        android:layout_height="49dp"
-        android:layout_alignEnd="@+id/map"
-        android:layout_alignBottom="@+id/map"
-        android:layout_marginEnd="93dp"
-        android:layout_marginBottom="261dp"
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/map"
+        android:layout_alignTop="@+id/map"
+        android:layout_marginStart="452dp"
+        android:layout_marginTop="1dp"
         android:textColor="@color/colorAccent"
-        android:textSize="30sp" />
+        android:textSize="18sp" />
 
 </RelativeLayout>
