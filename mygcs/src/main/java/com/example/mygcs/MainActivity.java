@@ -1,11 +1,13 @@
 package com.example.mygcs;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.graphics.PointF;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -69,10 +71,15 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     private ControlTower controlTower;
     private final Handler handler = new Handler();
     private LatLong vehiclePosition;
-    private LatLng GPSvalue;
     private NaverMap mMap;
     private Spinner modeSelector;
     private Marker marker = new Marker();
+    private LatLng GPSvalue;
+
+    private static Boolean MapLockable = false;
+
+    PolylineOverlay polyline = new PolylineOverlay();
+    ArrayList<LatLng> polyLatLng  = new ArrayList<LatLng>();
 
     private static int MapSelectCount = 0;
     private static int LandmarkSelectCount = 0;
@@ -169,8 +176,13 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 updateYAW();
                 break;
 
+            case AttributeEvent.STATE_UPDATED:
+                updateArmButton();
+                break;
+
             case AttributeEvent.GPS_POSITION:
                 GPSLatLngUpdate();
+                MapLockTap();
                 break;
 
             case AttributeEvent.ALTITUDE_UPDATED:
@@ -182,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
             case AttributeEvent.GPS_COUNT:
                 updateSatellite();
-            default:
+                default:
                 // Log.i("DRONE_EVENT", event); //Uncomment to see events from the drone
                 break;
         }
@@ -315,6 +327,10 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         vehiclePosition = droneGps.getPosition();
         GPSvalue = (new LatLng(vehiclePosition.getLatitude(), vehiclePosition.getLongitude()));
 
+        polyLatLng.add(GPSvalue);
+        polyline.setCoords(polyLatLng);
+        polyline.setMap(mMap);
+
         Attitude droneYAW = this.drone.getAttribute(AttributeType.ATTITUDE);
         double yawValue = droneYAW.getYaw();
         float yawAngle = (float) yawValue;
@@ -355,14 +371,19 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         mapLockSelect.setText("맵 잠금");
         mapLockSelect.setBackgroundColor(0xFFED901F);
 
-        Gps droneGps = this.drone.getAttribute(AttributeType.GPS);
-        vehiclePosition = droneGps.getPosition();
-        GPSvalue = (new LatLng(vehiclePosition.getLatitude(), vehiclePosition.getLongitude()));
-
-        CameraUpdate cameraUpdate = CameraUpdate.scrollTo(GPSvalue);
-        mMap.moveCamera(cameraUpdate);
+        MapLockable = true;
     }
 
+    public void MapLockTap(){
+        if(MapLockable == true) {
+            Gps droneGps = this.drone.getAttribute(AttributeType.GPS);
+            vehiclePosition = droneGps.getPosition();
+            GPSvalue = (new LatLng(vehiclePosition.getLatitude(), vehiclePosition.getLongitude()));
+
+            CameraUpdate cameraUpdate = CameraUpdate.scrollTo(GPSvalue);
+            mMap.moveCamera(cameraUpdate);
+        }
+    }
     public void MapMove(View view){
         Button mapLockSelect = (Button) findViewById(R.id.mapLockSelect);
         Button mapLockbutton = (Button) findViewById(R.id.mapLockButton);
@@ -373,6 +394,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         mapLockSelect.setText("맵 이동");
         mapLockSelect.setBackgroundColor(0xFF49290F);
+        show();
+
+        MapLockable = false;
     }
 
     public void onMapselectButton(View view){
@@ -497,6 +521,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     public void clearBtn(View view){
         LandmarkOff(view);
         generalMap(view);
+        polyline.setMap(null);
     }
 
     public void onArmButtonTap(View view) {
@@ -517,7 +542,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             });
         } else if (vehicleState.isArmed()) {
             // Take off
-            ControlApi.getApi(this.drone).takeoff(10, new AbstractCommandListener() {
+            ControlApi.getApi(this.drone).takeoff(3, new AbstractCommandListener() {
 
                 @Override
                 public void onSuccess() {
@@ -569,10 +594,22 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         }
     }
 
+    void show()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("AlertDialog Title");
+        builder.setMessage("AlertDialog Content");
+        builder.setPositiveButton("우측버튼",
+                (dialog, which) -> Toast.makeText(getApplicationContext(),"우측버튼 클릭됨",Toast.LENGTH_LONG).show());
+        builder.setNegativeButton("좌측버튼",
+                (dialog, which) -> Toast.makeText(getApplicationContext(),"좌측버튼 클릭됨",Toast.LENGTH_LONG).show());
+        builder.show();
+
+    }
+
     @Override
     public void onMapReady(@NonNull NaverMap naverMap) {
         mMap = naverMap;
-
 
         //각 장소별 경위도
         ArrayList<LatLng> Location  = new ArrayList<LatLng>();
@@ -618,8 +655,8 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         //클릭시 경위도표시
         naverMap.setOnMapLongClickListener((point, coord) -> {
-            Toast.makeText(getApplicationContext(), "위도: " + coord.latitude + ", 경도: " + coord.longitude, Toast.LENGTH_SHORT).show();
 
+            Toast.makeText(getApplicationContext(), "위도: " + coord.latitude + ", 경도: " + coord.longitude, Toast.LENGTH_SHORT).show();
         });
     }
 }
