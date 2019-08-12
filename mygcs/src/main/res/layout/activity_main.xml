@@ -13,72 +13,279 @@
 
     </FrameLayout>
 
+    <Button
+        android:id="@+id/takeOffAltitudeView"
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/btnMissionStart"
+        android:layout_alignStart="@+id/map"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="5dp"
+        android:onClick="altitudeView"
+        android:text="3m\n이륙고도"
+        android:textAllCaps="false" />
+
+
+    <Button
+        android:id="@+id/upAltitude"
+        android:layout_width="46dp"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/btnConnect"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="60dp"
+        android:layout_toEndOf="@+id/takeOffAltitudeView"
+        android:onClick="upAltitude"
+        android:text="▲"
+        android:textSize="24sp"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/downAltitude"
+        android:layout_width="46dp"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/btnConnect"
+        android:layout_marginStart="5dp"
+        android:layout_marginBottom="60dp"
+        android:layout_toEndOf="@+id/upAltitude"
+        android:onClick="downAltitude"
+        android:text="▼"
+        android:textSize="24sp"
+        android:visibility="invisible" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler"
+        android:layout_width="299dp"
+        android:layout_height="131dp"
+        android:layout_below="@+id/textView"
+        android:layout_alignStart="@+id/map"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp" />
+
     <Spinner
         android:id="@+id/modeSelect"
-        android:layout_width="100dp"
+        android:layout_width="131dp"
         android:layout_height="wrap_content"
         android:layout_column="1"
-        android:layout_alignStart="@+id/map"
-        android:layout_alignTop="@+id/map"
-        android:layout_alignParentLeft="true"
-        android:layout_marginStart="190dp"
-        android:layout_marginLeft="190dp"
-        android:layout_marginTop="2dp"
-        android:layout_marginRight="-299dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="5dp"
+        android:layout_marginLeft="192dp"
+        android:layout_marginTop="1dp"
+        android:layout_marginRight="-216dp"
         android:layout_toLeftOf="@+id/btnConnect"
+        android:layout_toEndOf="@+id/modeText"
         android:spinnerMode="dropdown" />
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="match_parent"
         android:layout_height="29dp"
+        android:layout_alignStart="@+id/map"
+        android:layout_alignTop="@+id/map"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="0dp"
         android:alpha="50"
         android:background="#CC000000" />
 
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/btnArmTakeOff"
+        android:layout_width="72dp"
+        android:layout_height="wrap_content"
+        android:layout_alignStart="@+id/map"
+        android:layout_alignBottom="@+id/map"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="#FFED901F"
+        android:onClick="onArmButtonTap"
+        android:text="ARM"
+        android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/btnMissionStart"
+        android:layout_width="72dp"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/btnArmTakeOff"
+        android:layout_alignStart="@+id/map"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="5dp"
+        android:background="#FFED901F"
+        android:onClick="onMissionButtonTap"
+        android:text="임무시작"
+        android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/selectMapMode"
         android:layout_width="wrap_content"
         android:layout_height="62dp"
-        android:layout_alignStart="@+id/yawText"
-        android:layout_alignTop="@+id/textView"
-        android:layout_marginStart="-516dp"
-        android:layout_marginTop="343dp"
-        android:background="#FF5722"
-        android:text="ARM" />
+        android:layout_alignBottom="@+id/map"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_toStartOf="@+id/selectLandmark"
+        android:background="#FFED901F"
+        android:onClick="onMapselectButton"
+        android:text="일반지도"
+        android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/mapLockSelect"
+        android:layout_width="wrap_content"
+        android:layout_height="62dp"
+        android:layout_alignBottom="@+id/map"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_toStartOf="@+id/selectMapMode"
+        android:background="@color/colorPrimary"
+        android:onClick="MapLockSelect"
+        android:text="맵 이동"
+        android:textColor="#FFFFFF"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/mapLockButton"
+        android:layout_width="wrap_content"
+        android:layout_height="58dp"
+        android:layout_above="@+id/mapLockSelect"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="5dp"
+        android:layout_toStartOf="@+id/generalMap"
+        android:background="#FFED901F"
+        android:onClick="MapLock"
+        android:text="맵 잠금"
+        android:textColor="#FFFFFF"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/mapMoveButton"
+        android:layout_width="wrap_content"
+        android:layout_height="62dp"
+        android:layout_above="@+id/mapLockButton"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="5dp"
+        android:layout_toStartOf="@+id/topographicalMap"
+        android:background="@color/colorPrimary"
+        android:onClick="MapMove"
+        android:text="맵 이동"
+        android:textColor="#FFFFFF"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/topographicalMap"
+        android:layout_width="wrap_content"
+        android:layout_height="62dp"
+        android:layout_above="@+id/generalMap"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="5dp"
+        android:layout_toStartOf="@+id/landmarkOnButton"
+        android:background="@color/colorPrimary"
+        android:onClick="topographicalMap"
+        android:text="지형도"
+        android:textColor="#FFFFFF"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/generalMap"
+        android:layout_width="wrap_content"
+        android:layout_height="62dp"
+        android:layout_above="@+id/selectMapMode"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="5dp"
+        android:layout_toStartOf="@+id/landmarkOnButton"
+        android:background="#FFED901F"
+        android:onClick="generalMap"
+        android:text="일반지도"
+        android:textColor="#FFFFFF"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/selectLandmark"
+        android:layout_width="wrap_content"
+        android:layout_height="62dp"
+        android:layout_alignBottom="@+id/map"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_toStartOf="@+id/btnclear"
+        android:background="@color/colorPrimary"
+        android:onClick="LandmarkSelectButton"
+        android:text="지적도Off"
+        android:textAllCaps="false"
+        android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/landmarkOnButton"
+        android:layout_width="wrap_content"
+        android:layout_height="62dp"
+        android:layout_above="@+id/selectLandmark"
+        android:layout_alignEnd="@+id/map"
+        android:layout_marginEnd="105dp"
+        android:layout_marginBottom="5dp"
+        android:background="#FFED901F"
+        android:onClick="LandmarkOn"
+        android:text="지적도On"
+        android:textAllCaps="false"
+        android:textColor="#FFFFFF"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/landmarkOffButton"
+        android:layout_width="wrap_content"
+        android:layout_height="62dp"
+        android:layout_above="@+id/landmarkOnButton"
+        android:layout_alignEnd="@+id/map"
+        android:layout_marginEnd="105dp"
+        android:layout_marginBottom="5dp"
+        android:background="@color/colorPrimary"
+        android:onClick="LandmarkOff"
+        android:text="지적도off"
+        android:textAllCaps="false"
+        android:textColor="#FFFFFF"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/satelliteMap"
+        android:layout_width="wrap_content"
+        android:layout_height="62dp"
+        android:layout_above="@+id/topographicalMap"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="200dp"
+        android:layout_marginBottom="5dp"
+        android:background="@color/colorPrimary"
+        android:onClick="satelliteMap"
+        android:text="위성지도"
+        android:textColor="#FFFFFF"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/btnclear"
+        android:layout_width="wrap_content"
+        android:layout_height="62dp"
+        android:layout_alignEnd="@+id/map"
+        android:layout_alignBottom="@+id/map"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="@color/colorPrimary"
+        android:onClick="clearBtn"
+        android:text="CLEAR"
+        android:textColor="#FFFFFF" />
 
     <Button
         android:id="@+id/btnConnect"
         android:layout_width="124dp"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/altitudeText"
-        android:layout_alignTop="@+id/map"
-        android:layout_marginStart="-306dp"
-        android:layout_marginTop="34dp"
+        android:layout_alignBottom="@+id/map"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_toEndOf="@+id/btnArmTakeOff"
         android:onClick="onBtnConnectTap"
         android:text="Connect" />
 
     <TextView
-        android:id="@+id/distanceValueTextView"
-        android:layout_width="177dp"
-        android:layout_height="49dp"
-        android:layout_alignStart="@+id/DistanceTexst"
-        android:layout_alignEnd="@+id/map"
-        android:layout_alignBottom="@+id/map"
-        android:layout_marginStart="160dp"
-        android:layout_marginEnd="384dp"
-        android:layout_marginBottom="64dp"
-        android:textColor="@color/colorAccent"
-        android:textSize="30sp" />
-
-    <TextView
         android:id="@+id/altitudeValueTextView"
-        android:layout_width="66dp"
+        android:layout_width="57dp"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/map"
         android:layout_alignTop="@+id/map"
-        android:layout_marginStart="356dp"
-        android:layout_marginTop="2dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="1dp"
+        android:layout_toEndOf="@+id/altitudeText"
         android:textColor="@color/colorAccent"
         android:textSize="18sp" />
 
@@ -86,10 +293,10 @@
         android:id="@+id/altitudeText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/map"
         android:layout_alignTop="@+id/map"
-        android:layout_marginStart="316dp"
+        android:layout_marginStart="5dp"
         android:layout_marginTop="1dp"
+        android:layout_toEndOf="@+id/modeSelect"
         android:text="고도"
         android:textColor="#FFFFFF"
         android:textSize="18sp" />
@@ -110,10 +317,10 @@
         android:id="@+id/modeText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/map"
         android:layout_alignTop="@+id/map"
-        android:layout_marginStart="121dp"
-        android:layout_marginTop="2dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="1dp"
+        android:layout_toEndOf="@+id/voltageValueTextView"
         android:text="비행모드"
         android:textColor="#FFFFFF"
         android:textSize="18sp" />
@@ -122,47 +329,33 @@
         android:id="@+id/voltageValueTextView"
         android:layout_width="68dp"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/map"
         android:layout_alignTop="@+id/map"
-        android:layout_marginStart="50dp"
+        android:layout_marginStart="5dp"
         android:layout_marginTop="1dp"
+        android:layout_toEndOf="@+id/VoltageText"
         android:textColor="#FFFFFF"
         android:textSize="18sp" />
-
-    <TextView
-        android:id="@+id/DistanceTexst"
-        android:layout_width="148dp"
-        android:layout_height="51dp"
-        android:layout_alignStart="@+id/map"
-        android:layout_alignEnd="@+id/map"
-        android:layout_alignBottom="@+id/map"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="572dp"
-        android:layout_marginBottom="64dp"
-        android:text="Distance :"
-        android:textColor="@color/colorAccent"
-        android:textSize="30sp" />
 
     <TextView
         android:id="@+id/yawText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/map"
-        android:layout_alignTop="@+id/map"
-        android:layout_marginStart="523dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="2dp"
         android:layout_marginTop="1dp"
+        android:layout_toEndOf="@+id/speedValueTextView"
         android:text="YAW"
         android:textColor="@color/colorAccent"
         android:textSize="18sp" />
 
     <TextView
         android:id="@+id/satelliteText"
-        android:layout_width="wrap_content"
+        android:layout_width="45dp"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/map"
         android:layout_alignTop="@+id/map"
-        android:layout_marginStart="641dp"
-        android:layout_marginTop="2dp"
+        android:layout_marginTop="1dp"
+        android:layout_marginEnd="5dp"
+        android:layout_toStartOf="@+id/satelliteValueTextView"
         android:text="위성"
         android:textColor="@color/colorAccent"
         android:textSize="18sp" />
@@ -171,33 +364,33 @@
         android:id="@+id/speedText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/map"
         android:layout_alignTop="@+id/map"
-        android:layout_marginStart="415dp"
-        android:layout_marginTop="2dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="1dp"
+        android:layout_toEndOf="@+id/altitudeValueTextView"
         android:text="속도"
         android:textColor="@color/colorAccent"
         android:textSize="18sp" />
 
     <TextView
         android:id="@+id/satelliteValueTextView"
-        android:layout_width="57dp"
+        android:layout_width="48dp"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/map"
         android:layout_alignTop="@+id/map"
-        android:layout_marginStart="677dp"
-        android:layout_marginTop="2dp"
+        android:layout_alignEnd="@+id/map"
+        android:layout_marginTop="1dp"
+        android:layout_marginEnd="8dp"
         android:textColor="@color/colorAccent"
         android:textSize="18sp" />
 
     <TextView
         android:id="@+id/yawalueTextView"
-        android:layout_width="75dp"
+        android:layout_width="69dp"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/map"
-        android:layout_alignTop="@+id/map"
-        android:layout_marginStart="565dp"
-        android:layout_marginTop="1dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
+        android:layout_toStartOf="@+id/satelliteText"
+        android:layout_toEndOf="@+id/yawText"
         android:textColor="@color/colorAccent"
         android:textSize="18sp" />
 
@@ -205,10 +398,10 @@
         android:id="@+id/speedValueTextView"
         android:layout_width="70dp"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/map"
         android:layout_alignTop="@+id/map"
-        android:layout_marginStart="452dp"
+        android:layout_marginStart="5dp"
         android:layout_marginTop="1dp"
+        android:layout_toEndOf="@+id/speedText"
         android:textColor="@color/colorAccent"
         android:textSize="18sp" />
 
