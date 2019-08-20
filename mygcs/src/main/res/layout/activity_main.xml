@@ -54,8 +54,8 @@
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler"
-        android:layout_width="299dp"
-        android:layout_height="131dp"
+        android:layout_width="293dp"
+        android:layout_height="98dp"
         android:layout_below="@+id/textView"
         android:layout_alignStart="@+id/map"
         android:layout_marginStart="8dp"

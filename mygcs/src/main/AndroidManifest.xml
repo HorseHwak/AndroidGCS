@@ -11,7 +11,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity"
+            android:theme="@style/myTheme"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -21,5 +24,7 @@
             android:name="com.naver.maps.map.CLIENT_ID"
             android:value="onl294onua" />
     </application>
+
+
 
 </manifest>

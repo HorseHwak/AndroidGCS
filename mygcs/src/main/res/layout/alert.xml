@@ -1,0 +1,50 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ffffffff">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:id="@+id/a"
+        android:gravity="center"
+        android:src="@drawable/error_48px"
+        android:background="#DA5F6A"
+        android:scaleType="fitCenter" />
+
+    <TextView
+        android:id="@+id/text_dialog"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_below="@+id/a"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="4dp"
+        android:layout_marginTop="54dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="20dp"
+        android:gravity="center_horizontal"
+        android:text="주의!! 확인 버튼을 누르시면 모터가 고속회전합니다."
+        android:textSize="30sp" />
+
+    <Button
+        android:id="@+id/btnConfirm"
+        android:layout_width="117dp"
+        android:layout_height="73dp"
+        android:layout_below="@+id/text_dialog"
+        android:layout_alignStart="@+id/a"
+        android:layout_marginStart="159dp"
+        android:layout_marginTop="50dp"
+        android:text="확인" />
+
+    <Button
+        android:id="@+id/btnCancel"
+        android:layout_width="115dp"
+        android:layout_height="73dp"
+        android:layout_below="@+id/text_dialog"
+        android:layout_alignStart="@+id/a"
+        android:layout_marginStart="429dp"
+        android:layout_marginTop="50dp"
+        android:text="취소" />
+
+</RelativeLayout>
