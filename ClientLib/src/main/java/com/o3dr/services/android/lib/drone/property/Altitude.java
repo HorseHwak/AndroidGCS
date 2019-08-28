@@ -11,6 +11,9 @@ public class Altitude implements DroneAttribute {
     private double altitude;
     private double targetAltitude;
 
+    private double absolute_altitude;
+    private double relative_altitude;
+
     public Altitude(){}
 
     public Altitude(double altitude, double targetAltitude) {
@@ -19,7 +22,15 @@ public class Altitude implements DroneAttribute {
     }
 
     public double getAltitude() {
-        return altitude;
+        return relative_altitude;
+    }
+
+    public double getAbsoluteAltitude() {
+        return absolute_altitude;
+    }
+
+    public double getRelativeAltitude() {
+        return relative_altitude;
     }
 
     public double getTargetAltitude() {
@@ -28,6 +39,11 @@ public class Altitude implements DroneAttribute {
 
     public void setAltitude(double altitude) {
         this.altitude = altitude;
+    }
+
+    public void setAltitudeAbsoluteAndRelative(double abslAlt, double relativeAlt) {
+        this.absolute_altitude = abslAlt; //절대고도
+        this.relative_altitude = relativeAlt; //상대고도
     }
 
     public void setTargetAltitude(double targetAltitude) {

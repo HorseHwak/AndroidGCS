@@ -36,14 +36,18 @@ import com.naver.maps.map.util.MarkerIcons;
 import com.o3dr.android.client.ControlTower;
 import com.o3dr.android.client.Drone;
 import com.o3dr.android.client.apis.ControlApi;
+import com.o3dr.android.client.apis.MissionApi;
 import com.o3dr.android.client.apis.VehicleApi;
 import com.o3dr.android.client.interfaces.DroneListener;
 import com.o3dr.android.client.interfaces.LinkListener;
 import com.o3dr.android.client.interfaces.TowerListener;
 import com.o3dr.services.android.lib.coordinate.LatLong;
+import com.o3dr.services.android.lib.coordinate.LatLongAlt;
 import com.o3dr.services.android.lib.drone.attribute.AttributeEvent;
 import com.o3dr.services.android.lib.drone.attribute.AttributeType;
 import com.o3dr.services.android.lib.drone.connection.ConnectionParameter;
+import com.o3dr.services.android.lib.drone.mission.Mission;
+import com.o3dr.services.android.lib.drone.mission.item.spatial.Waypoint;
 import com.o3dr.services.android.lib.drone.property.Altitude;
 import com.o3dr.services.android.lib.drone.property.Attitude;
 import com.o3dr.services.android.lib.drone.property.Battery;
@@ -81,8 +85,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     private Marker gotomaker = new Marker();
     private Marker Apoint = new Marker();
     private Marker Bpoint = new Marker();
-    private Marker Cpoint = new Marker();
-    private Marker Dpoint = new Marker();
     private LatLng GPSvalue;
     private static int takeoffAltitude = 3;
 
@@ -98,14 +100,19 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     ArrayList<LatLng> mPath = new ArrayList<>();
     ArrayList<LatLng> mPolygon = new ArrayList<>();
 
-    private static int MapSelectCount = 0;
-    private static int LandmarkSelectCount = 0;
-    private static int MapLockCount = 0;
-    private static int AltitudeCount = 0;
+    private int MapSelectCount = 0;
+    private int LandmarkSelectCount = 0;
+    private int MapLockCount = 0;
+    private int AltitudeCount = 0;
+    private int ModeSelectCount = 0;
+    private static int MissionButtonCount = 0;
 
-    private static int selectPin = 0;
-    LatLong ApLat = null, BpLat = null, CpLat = null, DpLat = null;
-    LatLng nApLat = null, nBpLat = null, nCpLat = null, nDpLat= null;
+    private int selectPin = 0;
+
+    private double mRecentAltitude = 0;
+
+    LatLong ApLat = null, BpLat = null;
+    LatLng nApLat = null, nBpLat = null;
     PolylineOverlay pinPolyline = new PolylineOverlay();
     PolygonOverlay pinPolygon = new PolygonOverlay();
 
@@ -180,7 +187,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     public void onStart() {
         super.onStart();
         this.controlTower.connect(this);
-
     }
 
     @Override
@@ -188,7 +194,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         super.onStop();
         if (this.drone.isConnected()) {
             this.drone.disconnect();
-            updateConnectedButton(false);
         }
 
         this.controlTower.unregisterDrone(this.drone);
@@ -203,9 +208,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             case AttributeEvent.STATE_CONNECTED:
                 Lockbtn.setVisibility(View.VISIBLE);
                 alertUser("Drone Connected");
-                updateConnectedButton(this.drone.isConnected());
                 updateArmButton();
-                watch();
+                onMissionSend();
+                onMissionButtonTap();
                 break;
 
             case AttributeEvent.STATE_VEHICLE_MODE:
@@ -223,7 +228,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             case AttributeEvent.STATE_DISCONNECTED:
                 Lockbtn.setVisibility(View.INVISIBLE);
                 alertUser("Drone Disconnected");
-                updateConnectedButton(this.drone.isConnected());
                 updateArmButton();
                 break;
 
@@ -233,13 +237,19 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
             case AttributeEvent.BATTERY_UPDATED:
                 updateBattery();
-                updateYAW();
+                longclickevent();
+                break;
+
+            case AttributeEvent.STATE_ARMING:
                 updateArmButton();
-                watch();
                 break;
 
             case AttributeEvent.STATE_UPDATED:
                 updateArmButton();
+                break;
+
+            case AttributeEvent.ATTITUDE_UPDATED:
+                updateYAW();
                 break;
 
             case AttributeEvent.GPS_POSITION:
@@ -251,7 +261,8 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 updateAltitude();
                 break;
 
-            case AttributeEvent.HOME_UPDATED:
+            case AttributeEvent.MISSION_SENT:
+                Mission_sent();
                 break;
 
             case AttributeEvent.GPS_COUNT:
@@ -262,22 +273,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         }
     }
 
-    protected void updateConnectedButton(Boolean isConnected) {
-        Button connectButton = (Button) findViewById(R.id.btnConnect);
-        if (isConnected) {
-            connectButton.setText(getText(R.string.button_disconnect));
-        } else {
-            connectButton.setText(getText(R.string.button_connect));
-        }
-    }
-
-    public void onBtnConnectTap(View view) {
-        if (this.drone.isConnected()) {
-            this.drone.disconnect();
-        } else {
+    public void onConnectTap() {
             ConnectionParameter params = ConnectionParameter.newUdpConnection(null);
             this.drone.connect(params);
-        }
     }
 
     public void onFlightModeSelected(View view) {
@@ -325,6 +323,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         alertUser("DroneKit-Android Connected");
         this.controlTower.registerDrone(this.drone, this.handler);
         this.drone.registerDroneListener(this);
+        onConnectTap();
     }
 
     @Override
@@ -347,22 +346,13 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             mList.remove(3);
             mAdapter.notifyDataSetChanged();
         }
-        /*
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mList.remove(0);
-                mAdapter.notifyItemRemoved(0);
-                mAdapter.notifyItemChanged(0);
-            }
-        },5000);
-        */
     }
 
     protected void updateAltitude() {
         TextView altitudeTextView = (TextView) findViewById(R.id.altitudeValueTextView);
         Altitude droneAltitude = this.drone.getAttribute(AttributeType.ALTITUDE);
-        altitudeTextView.setText(String.format("%3.1f", droneAltitude.getAltitude()) + "m");
+        mRecentAltitude = droneAltitude.getRelativeAltitude();
+        altitudeTextView.setText(String.format("%3.1f", mRecentAltitude) + "m");
     }
 
     protected void updateSpeed() {
@@ -382,6 +372,10 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         TextView YAWTextView = (TextView) findViewById(R.id.yawalueTextView);
         Attitude droneYAW = this.drone.getAttribute(AttributeType.ATTITUDE);
         double yawValue = droneYAW.getYaw();
+
+        if(yawValue < 0){
+            yawValue += 360;
+        }
         YAWTextView.setText(String.format("%.1f", yawValue) + "deg");
 
     }
@@ -420,6 +414,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         Attitude droneYAW = this.drone.getAttribute(AttributeType.ATTITUDE);
         double yawValue = droneYAW.getYaw();
+        if(yawValue < 0){
+            yawValue += 360;
+        }
         float yawAngle = (float) yawValue;
 
         marker.setPosition(GPSvalue);
@@ -456,6 +453,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         mapLockbutton.setVisibility(View.INVISIBLE);
         mapMovebutton.setVisibility(View.INVISIBLE);
+        MapLockCount = 0;
 
         mapLockSelect.setText("맵 잠금");
         mapLockSelect.setBackgroundColor(0xFFED901F);
@@ -481,6 +479,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         mapLockbutton.setVisibility(View.INVISIBLE);
         mapMovebutton.setVisibility(View.INVISIBLE);
+        MapLockCount = 0;
 
         mapLockSelect.setText("맵 이동");
         mapLockSelect.setBackgroundColor(0xFF49290F);
@@ -518,6 +517,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         generalMap.setVisibility(View.INVISIBLE);
         topographicalMap.setVisibility(View.INVISIBLE);
         satelliteMap.setVisibility(View.INVISIBLE);
+        MapSelectCount = 0;
 
         generalMap.setBackgroundColor(0xFFED901F);
         topographicalMap.setBackgroundColor(0xFF49290F);
@@ -537,6 +537,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         generalMap.setVisibility(View.INVISIBLE);
         topographicalMap.setVisibility(View.INVISIBLE);
         satelliteMap.setVisibility(View.INVISIBLE);
+        MapSelectCount = 0;
 
         generalMap.setBackgroundColor(0xFF49290F);
         topographicalMap.setBackgroundColor(0xFFED901F);
@@ -556,6 +557,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         generalMap.setVisibility(View.INVISIBLE);
         topographicalMap.setVisibility(View.INVISIBLE);
         satelliteMap.setVisibility(View.INVISIBLE);
+        MapSelectCount = 0;
 
         generalMap.setBackgroundColor(0xFF49290F);
         topographicalMap.setBackgroundColor(0xFF49290F);
@@ -589,6 +591,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         LandmarkOn.setVisibility(View.INVISIBLE);
         LandmarkOff.setVisibility(View.INVISIBLE);
+        LandmarkSelectCount = 0;
 
         mMap.setLayerGroupEnabled(NaverMap.LAYER_GROUP_CADASTRAL, true);
         LandmarkSelect.setText("지적도On");
@@ -602,6 +605,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         LandmarkOn.setVisibility(View.INVISIBLE);
         LandmarkOff.setVisibility(View.INVISIBLE);
+        LandmarkSelectCount = 0;
 
         mMap.setLayerGroupEnabled(NaverMap.LAYER_GROUP_CADASTRAL, false);
         LandmarkSelect.setText("지적도Off");
@@ -612,6 +616,13 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         polyline.setMap(null);
         gotomaker.setMap(null);
         polyLatLng.clear();
+        mPath.clear();
+        mPolygon.clear();
+
+        Apoint.setMap(null);
+        Bpoint.setMap(null);
+        pinPolyline.setMap(null);
+        pinPolygon.setMap(null);
     }
 
     public void onArmButtonTap(View view) {
@@ -703,34 +714,177 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         }
     }
 
-    public void watch(){
-        mMap.setOnMapLongClickListener((point, coord) -> {
+    private void setMission(Mission mMission) {
+        MissionApi.getApi(this.drone).setMission(mMission,true);
+    }
 
-            if (selectPin == 0) {
-                nApLat = new LatLng(coord.latitude, coord.longitude);
-                ApLat = new LatLong(coord.latitude, coord.longitude);
-                Apoint.setPosition(coord);
-                Apoint.setIcon(OverlayImage.fromResource(R.drawable.map_pin_64px));
-                Apoint.setMap(mMap);
-                pinPolyline.setMap(null);
-                selectPin = 1;
-            }
-            else if(selectPin == 1){
-                nBpLat = new LatLng(coord.latitude, coord.longitude);
-                BpLat = new LatLong(coord.latitude, coord.longitude);
-                Bpoint.setPosition(coord);
-                Bpoint.setIcon(OverlayImage.fromResource(R.drawable.map_pin_64px_color));
-                Bpoint.setMap(mMap);
-                selectPin = 0;
-                pinPolyline.setCoords(Arrays.asList(nApLat,nBpLat));
-                pinPolyline.setMap(mMap);
-                Toast.makeText(getApplicationContext(), "거리 : " +  (int)(MathUtils.getDistance2D(ApLat,BpLat)) + 'M', Toast.LENGTH_SHORT).show();
+    private void pauseMission() {
+        MissionApi.getApi(this.drone).pauseMission(null);
+    }
+
+    public void onMissionSend(){
+        final Mission mMission = new Mission();
+
+        for(int i = 0; i < mPath.size(); i++) {
+            Waypoint waypoint = new Waypoint();
+            waypoint.setDelay(1);
+
+            LatLongAlt latLongAlt = new LatLongAlt(mPath.get(i).latitude, mPath.get(i).longitude, mRecentAltitude);
+            waypoint.setCoordinate(latLongAlt);
+
+            mMission.addMissionItem(waypoint);
+        }
+
+        final Button Missionsend = (Button) findViewById(R.id.btnMissionStart);
+        Missionsend.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(Missionsend.getText().equals("임무전송")) {
+                    Log.d("mPath : ", String.valueOf(mPath));
+                    setMission(mMission);
+                }
+                else if(Missionsend.getText().equals("임무시작")){
+                    setAutoMode();
+                    Missionsend.setText("임무중지");
+                }
+                else if(Missionsend.getText().equals("임무중지")){
+                    pauseMission();
+                    setLoitermode();
+                    Missionsend.setText("임무전송");
+                }
             }
         });
     }
 
-    public void onMissionButtonTap(View view){
+    private void setAutoMode(){
+        VehicleApi.getApi(this.drone).setVehicleMode(VehicleMode.COPTER_AUTO, new AbstractCommandListener() {
+            @Override
+            public void onSuccess() {
+                alertUser("Set AutoMode Complete");
+            }
 
+            @Override
+            public void onError(int executionError) {
+                alertUser("Fail to set AutoMode");
+            }
+
+            @Override
+            public void onTimeout() {
+                alertUser("Fail to set AutoMode");
+            }
+        });
+    }
+
+    private void setLoitermode(){
+        VehicleApi.getApi(this.drone).setVehicleMode(VehicleMode.COPTER_LOITER, new AbstractCommandListener() {
+            @Override
+            public void onSuccess() {
+                alertUser("Set LoiterMode Complete");
+            }
+
+            @Override
+            public void onError(int executionError) {
+                alertUser("Fail to set LoiterMode");
+            }
+
+            @Override
+            public void onTimeout() {
+                alertUser("Fail to set LoiterMode");
+            }
+        });
+    }
+
+    private void Mission_sent(){
+        alertUser("Mission Upload Complete");
+        Button Missionsend = (Button) findViewById(R.id.btnMissionStart);
+        Missionsend.setText("임무시작");
+    }
+
+    public void onMissionButtonTap(){
+        Button modeViewer = (Button) findViewById(R.id.missionmodeselect);
+        Button normal = (Button) findViewById(R.id.normalmode);
+        Button flight = (Button) findViewById(R.id.rootflight);
+        Button interval = (Button) findViewById(R.id.intervalmonitoring);
+        Button area = (Button) findViewById(R.id.areamonitoring);
+
+        normal.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                modeViewer.setText("일반\n모드");
+                MissionButtonCount = 0;
+
+                normal.setVisibility(View.INVISIBLE);
+                flight.setVisibility(View.INVISIBLE);
+                interval.setVisibility(View.INVISIBLE);
+                area.setVisibility(View.INVISIBLE);
+                ModeSelectCount = 0;
+            }
+        });
+
+        flight.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                modeViewer.setText("경로\n비행");
+                MissionButtonCount = 1;
+
+                normal.setVisibility(View.INVISIBLE);
+                flight.setVisibility(View.INVISIBLE);
+                interval.setVisibility(View.INVISIBLE);
+                area.setVisibility(View.INVISIBLE);
+                ModeSelectCount = 0;
+            }
+        });
+
+        interval.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                modeViewer.setText("간격\n감시");
+                MissionButtonCount = 2;
+
+                normal.setVisibility(View.INVISIBLE);
+                flight.setVisibility(View.INVISIBLE);
+                interval.setVisibility(View.INVISIBLE);
+                area.setVisibility(View.INVISIBLE);
+                ModeSelectCount = 0;
+            }
+        });
+
+        area.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                modeViewer.setText("면적\n감시");
+                MissionButtonCount = 3;
+
+                normal.setVisibility(View.INVISIBLE);
+                flight.setVisibility(View.INVISIBLE);
+                interval.setVisibility(View.INVISIBLE);
+                area.setVisibility(View.INVISIBLE);
+                ModeSelectCount = 0;
+            }
+        });
+
+    }
+
+    public void missionmodeselect(View view){
+        Button normal = (Button) findViewById(R.id.normalmode);
+        Button flight = (Button) findViewById(R.id.rootflight);
+        Button interval = (Button) findViewById(R.id.intervalmonitoring);
+        Button area = (Button) findViewById(R.id.areamonitoring);
+
+        if(ModeSelectCount == 0){
+            normal.setVisibility(View.VISIBLE);
+            flight.setVisibility(View.VISIBLE);
+            interval.setVisibility(View.VISIBLE);
+            area.setVisibility(View.VISIBLE);
+            ModeSelectCount = 1;
+        }
+        else if(ModeSelectCount == 1){
+            normal.setVisibility(View.INVISIBLE);
+            flight.setVisibility(View.INVISIBLE);
+            interval.setVisibility(View.INVISIBLE);
+            area.setVisibility(View.INVISIBLE);
+            ModeSelectCount = 0;
+        }
     }
 
     public void altitudeView(View view){
@@ -763,61 +917,113 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         AltitdeView.setText(takeoffAltitude + "m\n이륙고도" );
     }
 
-    public void gotoAlertDIalog()
+    public void longclickevent()
     {
         mMap.setOnMapLongClickListener((point, coord) -> {
 
-            LatLong clickGPS = new LatLong(coord.latitude, coord.longitude);
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("주의!!");
-            builder.setMessage("확인 버튼을 누르시면 기체가 클릭한 지점으로 이동합니다.");
-
-            builder.setPositiveButton("확인", (dialogInterface, i) -> {
-
-                gotomaker.setPosition(new LatLng(coord.latitude, coord.longitude));
-                gotomaker.setIcon(MarkerIcons.BLACK);
-                gotomaker.setIconTintColor(Color.RED);
-                gotomaker.setMap(mMap);
-
+            if(MissionButtonCount == 0) {
                 State vehicleState = this.drone.getAttribute(AttributeType.STATE);
+                LatLong clickGPS = new LatLong(coord.latitude, coord.longitude);
 
-                if(vehicleState.isFlying()){
-                    VehicleApi.getApi(this.drone).setVehicleMode(VehicleMode.COPTER_GUIDED);
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("주의!!");
+                builder.setMessage("확인 버튼을 누르시면 기체가 클릭한 지점으로 이동합니다.");
+                builder.setPositiveButton("확인", (dialogInterface, i) -> {
+                    if(vehicleState.isFlying()) {
+                        gotomaker.setPosition(new LatLng(coord.latitude, coord.longitude));
+                        gotomaker.setIcon(MarkerIcons.BLACK);
+                        gotomaker.setIconTintColor(Color.RED);
+                        gotomaker.setMap(mMap);
 
-                    ControlApi.getApi(this.drone).goTo(clickGPS, true, new AbstractCommandListener() {
-                        @Override
-                        public void onSuccess() {
-                            alertUser("goto Point");
+                        VehicleApi.getApi(this.drone).setVehicleMode(VehicleMode.COPTER_GUIDED);
+                        ControlApi.getApi(this.drone).goTo(clickGPS, true, new AbstractCommandListener() {
+                            @Override
+                            public void onSuccess() {
+                                alertUser("goto Point");
+                            }
+
+                            @Override
+                            public void onError(int executionError) {
+                                alertUser("Unable to go Point.");
+                            }
+
+                            @Override
+                            public void onTimeout() {
+                                alertUser("Unable to go Point.");
+                            }
+                        });
+                    }
+                });
+
+                builder.setNegativeButton("취소", (dialogInterface, i) -> {
+                    return;
+                });
+                AlertDialog alert = builder.create();
+                alert.show();
+
+                Button Positivebtn = alert.getButton(AlertDialog.BUTTON_NEGATIVE);
+                Button Negativebtn = alert.getButton(AlertDialog.BUTTON_POSITIVE);
+
+                Positivebtn.setTextColor(0xFF000000);
+                Negativebtn.setTextColor(0xFF000000);
+
+                Log.d("MissionButtonCount : ", String.valueOf(MissionButtonCount));
+            }
+            else if(MissionButtonCount == 2) {
+                if (selectPin == 0) {
+                    nApLat = new LatLng(coord.latitude, coord.longitude);
+                    ApLat = new LatLong(coord.latitude, coord.longitude);
+                    Apoint.setPosition(coord);
+                    Apoint.setIcon(OverlayImage.fromResource(R.drawable.map_pin_64px));
+                    Apoint.setMap(mMap);
+                    pinPolyline.setMap(null);
+                    pinPolygon.setMap(null);
+                    selectPin = 1;
+                    mPath.add(nApLat);
+                    mPolygon.add(nApLat);
+                } else if (selectPin == 1) {
+                    nBpLat = new LatLng(coord.latitude, coord.longitude);
+                    BpLat = new LatLong(coord.latitude, coord.longitude);
+                    Bpoint.setPosition(coord);
+                    Bpoint.setIcon(OverlayImage.fromResource(R.drawable.map_pin_64px_color));
+                    Bpoint.setMap(mMap);
+
+                    selectPin = 0;
+
+                    mPath.add(nBpLat);
+                    mPolygon.add(nBpLat);
+                    for (int i = 5; i <= 50; i += 5) {
+                        if (Toggle == false) {
+                            mPath.add(new LatLng(MathUtils.newCoordFromBearingAndDistance(BpLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, i).getLatitude(), MathUtils.newCoordFromBearingAndDistance(BpLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, i).getLongitude()));
+                            mPath.add(new LatLng(MathUtils.newCoordFromBearingAndDistance(ApLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, i).getLatitude(), MathUtils.newCoordFromBearingAndDistance(ApLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, i).getLongitude()));
+                            Toggle = true;
+                        } else if (Toggle == true) {
+                            mPath.add(new LatLng(MathUtils.newCoordFromBearingAndDistance(ApLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, i).getLatitude(), MathUtils.newCoordFromBearingAndDistance(ApLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, i).getLongitude()));
+                            mPath.add(new LatLng(MathUtils.newCoordFromBearingAndDistance(BpLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, i).getLatitude(), MathUtils.newCoordFromBearingAndDistance(BpLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, i).getLongitude()));
+                            Toggle = false;
                         }
+                    }
 
-                        @Override
-                        public void onError(int executionError) {
-                            alertUser("Unable to go Point.");
-                        }
+                    mPolygon.add(new LatLng(MathUtils.newCoordFromBearingAndDistance(BpLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, 50).getLatitude(), MathUtils.newCoordFromBearingAndDistance(BpLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, 50).getLongitude()));
+                    mPolygon.add(new LatLng(MathUtils.newCoordFromBearingAndDistance(ApLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, 50).getLatitude(), MathUtils.newCoordFromBearingAndDistance(ApLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, 50).getLongitude()));
 
-                        @Override
-                        public void onTimeout() {
-                            alertUser("Unable to go Point.");
-                        }
-                    });
+                    Log.d("Array : ", String.valueOf(mPolygon));
+
+                    pinPolygon.setCoords(mPolygon);
+                    pinPolygon.setColor(0x4C87CEEB);
+                    pinPolygon.setMap(mMap);
+
+                    pinPolyline.setGlobalZIndex(250000);
+                    pinPolyline.setCoords(mPath);
+                    pinPolyline.setColor(Color.WHITE);
+                    pinPolyline.setMap(mMap);
+
+
+                    Toast.makeText(getApplicationContext(), "각도 : " + (MathUtils.getHeadingFromCoordinates(ApLat, BpLat)), Toast.LENGTH_SHORT).show();
                 }
-            });
-
-            builder.setNegativeButton("취소", (dialogInterface, i) -> {
-                return;
-            });
-            AlertDialog alert = builder.create();
-            alert.show();
-
-            Button Positivebtn = alert.getButton(AlertDialog.BUTTON_NEGATIVE);
-            Button Negativebtn = alert.getButton(AlertDialog.BUTTON_POSITIVE);
-
-            Positivebtn.setTextColor(0xFF000000);
-            Negativebtn.setTextColor(0xFF000000);
-
-            Toast.makeText(getApplicationContext(), "위도: " + coord.latitude + ", 경도: " + coord.longitude, Toast.LENGTH_SHORT).show();
+            }
         });
+
     }
 
     @Override
@@ -869,69 +1075,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         //롱클릭시 경위도표시
         naverMap.setOnMapLongClickListener((point, coord) -> {
 
-            if (selectPin == 0) {
-                nApLat = new LatLng(coord.latitude, coord.longitude);
-                ApLat = new LatLong(coord.latitude, coord.longitude);
-                Apoint.setPosition(coord);
-                Apoint.setIcon(OverlayImage.fromResource(R.drawable.map_pin_64px));
-                Apoint.setMap(mMap);
-                pinPolyline.setMap(null);
-                pinPolygon.setMap(null);
-                selectPin = 1;
-                mPath.add(nApLat);
-                mPolygon.add(nApLat);
-            }
-            else if(selectPin == 1){
-                nBpLat = new LatLng(coord.latitude, coord.longitude);
-                BpLat = new LatLong(coord.latitude, coord.longitude);
-                Bpoint.setPosition(coord);
-                Bpoint.setIcon(OverlayImage.fromResource(R.drawable.map_pin_64px_color));
-                Bpoint.setMap(mMap);
-
-                selectPin = 0;
-
-                mPath.add(nBpLat);
-                mPolygon.add(nBpLat);
-                for (int i = 5; i <= 50; i+=5) {
-                    if(Toggle == false) {
-                        mPath.add(new LatLng(MathUtils.newCoordFromBearingAndDistance(BpLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, i).getLatitude(), MathUtils.newCoordFromBearingAndDistance(BpLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, i).getLongitude()));
-                        mPath.add(new LatLng(MathUtils.newCoordFromBearingAndDistance(ApLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, i).getLatitude(), MathUtils.newCoordFromBearingAndDistance(ApLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, i).getLongitude()));
-                        Toggle = true;
-                    }
-                    else if(Toggle == true){
-                        mPath.add(new LatLng(MathUtils.newCoordFromBearingAndDistance(ApLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, i).getLatitude(), MathUtils.newCoordFromBearingAndDistance(ApLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, i).getLongitude()));
-                        mPath.add(new LatLng(MathUtils.newCoordFromBearingAndDistance(BpLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, i).getLatitude(), MathUtils.newCoordFromBearingAndDistance(BpLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, i).getLongitude()));
-                        Toggle = false;
-                    }
-                }
-
-                mPolygon.add(new LatLng(MathUtils.newCoordFromBearingAndDistance(BpLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, 50).getLatitude(), MathUtils.newCoordFromBearingAndDistance(BpLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, 50).getLongitude()));
-                mPolygon.add(new LatLng(MathUtils.newCoordFromBearingAndDistance(ApLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, 50).getLatitude(), MathUtils.newCoordFromBearingAndDistance(ApLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, 50).getLongitude()));
-
-                Log.d("Array : ", String.valueOf(mPolygon));
-
-                pinPolygon.setCoords(mPolygon);
-                pinPolygon.setColor(0x4C87CEEB);
-                pinPolygon.setMap(mMap);
-
-                pinPolyline.setGlobalZIndex(250000);
-                pinPolyline.setCoords(mPath);
-                pinPolyline.setColor(Color.WHITE);
-                pinPolyline.setMap(mMap);
-
-                mPolygon.clear();
-                mPath.clear();
-
-                Toast.makeText(getApplicationContext(), "각도 : " +  (MathUtils.getHeadingFromCoordinates(ApLat,BpLat)), Toast.LENGTH_SHORT).show();
-            }
-            /*else if(selectPin == 2){
-                nCplat = new LatLng(coord.latitude, coord.longitude);
-                CpLat = new LatLong(coord.latitude, coord.longitude);
-                Cpoint.setPosition(coord);
-                Cpoint.setMap(mMap);
-                Toast.makeText(getApplicationContext(), "거리 : " +  (MathUtils.pointToLineDistance(ApLat, BpLat, CpLat)) + 'M', Toast.LENGTH_SHORT).show();
-                selectPin = 0;
-            }*/
         });
     }
 }

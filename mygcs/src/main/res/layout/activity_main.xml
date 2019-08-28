@@ -10,8 +10,67 @@
         android:id="@+id/map"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
     </FrameLayout>
+
+    <Button
+        android:id="@+id/missionmodeselect"
+        android:layout_width="59dp"
+        android:layout_height="42dp"
+        android:layout_above="@+id/takeOffAltitudeView"
+        android:layout_alignStart="@+id/map"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="3dp"
+        android:onClick="missionmodeselect"
+        android:text="일반\n모드"
+        android:textSize="8sp" />
+
+    <Button
+        android:id="@+id/normalmode"
+        android:layout_width="59dp"
+        android:layout_height="42dp"
+        android:layout_above="@+id/upAltitude"
+        android:layout_marginStart="1dp"
+        android:layout_marginBottom="3dp"
+        android:layout_toEndOf="@+id/missionmodeselect"
+        android:text="일반\n모드"
+        android:textSize="8sp"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/rootflight"
+        android:layout_width="59dp"
+        android:layout_height="42dp"
+        android:layout_above="@+id/downAltitude"
+        android:layout_marginStart="1dp"
+        android:layout_marginBottom="3dp"
+        android:layout_toEndOf="@+id/normalmode"
+        android:text="경로\n비행"
+        android:textSize="8sp"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/intervalmonitoring"
+        android:layout_width="59dp"
+        android:layout_height="42dp"
+        android:layout_above="@+id/downAltitude"
+        android:layout_marginStart="1dp"
+        android:layout_marginBottom="3dp"
+        android:layout_toEndOf="@+id/rootflight"
+        android:text="간격\n감시"
+        android:textSize="8sp"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/areamonitoring"
+        android:layout_width="59dp"
+        android:layout_height="42dp"
+        android:layout_above="@+id/downAltitude"
+        android:layout_marginStart="1dp"
+        android:layout_marginBottom="3dp"
+        android:layout_toEndOf="@+id/intervalmonitoring"
+        android:text="면적\n감시"
+        android:textSize="8sp"
+        android:visibility="invisible" />
 
     <Button
         android:id="@+id/takeOffAltitudeView"
@@ -30,9 +89,9 @@
         android:id="@+id/upAltitude"
         android:layout_width="46dp"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/btnConnect"
+        android:layout_alignBottom="@+id/map"
         android:layout_marginStart="8dp"
-        android:layout_marginBottom="60dp"
+        android:layout_marginBottom="90dp"
         android:layout_toEndOf="@+id/takeOffAltitudeView"
         android:onClick="upAltitude"
         android:text="▲"
@@ -43,9 +102,9 @@
         android:id="@+id/downAltitude"
         android:layout_width="46dp"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/btnConnect"
-        android:layout_marginStart="5dp"
-        android:layout_marginBottom="60dp"
+        android:layout_alignBottom="@+id/map"
+        android:layout_marginStart="3dp"
+        android:layout_marginBottom="90dp"
         android:layout_toEndOf="@+id/upAltitude"
         android:onClick="downAltitude"
         android:text="▼"
@@ -90,7 +149,7 @@
     <Button
         android:id="@+id/btnArmTakeOff"
         android:layout_width="72dp"
-        android:layout_height="wrap_content"
+        android:layout_height="33dp"
         android:layout_alignStart="@+id/map"
         android:layout_alignBottom="@+id/map"
         android:layout_marginStart="8dp"
@@ -103,14 +162,13 @@
     <Button
         android:id="@+id/btnMissionStart"
         android:layout_width="72dp"
-        android:layout_height="wrap_content"
+        android:layout_height="36dp"
         android:layout_above="@+id/btnArmTakeOff"
         android:layout_alignStart="@+id/map"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="7dp"
         android:layout_marginBottom="5dp"
         android:background="#FFED901F"
-        android:onClick="onMissionButtonTap"
-        android:text="임무시작"
+        android:text="임무전송"
         android:textColor="#FFFFFF" />
 
     <Button
@@ -266,17 +324,6 @@
         android:onClick="clearBtn"
         android:text="CLEAR"
         android:textColor="#FFFFFF" />
-
-    <Button
-        android:id="@+id/btnConnect"
-        android:layout_width="124dp"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/map"
-        android:layout_marginStart="8dp"
-        android:layout_marginBottom="8dp"
-        android:layout_toEndOf="@+id/btnArmTakeOff"
-        android:onClick="onBtnConnectTap"
-        android:text="Connect" />
 
     <TextView
         android:id="@+id/altitudeValueTextView"
