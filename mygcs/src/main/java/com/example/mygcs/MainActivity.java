@@ -1,13 +1,16 @@
 package com.example.mygcs;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.graphics.PointF;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -18,6 +21,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,13 +30,16 @@ import android.widget.Toast;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.geometry.LatLngBounds;
 import com.naver.maps.map.CameraUpdate;
+import com.naver.maps.map.LocationTrackingMode;
 import com.naver.maps.map.MapFragment;
 import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.OnMapReadyCallback;
+import com.naver.maps.map.UiSettings;
 import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.overlay.OverlayImage;
 import com.naver.maps.map.overlay.PolygonOverlay;
 import com.naver.maps.map.overlay.PolylineOverlay;
+import com.naver.maps.map.util.FusedLocationSource;
 import com.naver.maps.map.util.MarkerIcons;
 import com.o3dr.android.client.ControlTower;
 import com.o3dr.android.client.Drone;
@@ -71,6 +79,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class MainActivity extends AppCompatActivity implements DroneListener, TowerListener, LinkListener, OnMapReadyCallback{
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1000;
+    private FusedLocationSource locationSource;
 
     MapFragment mNaverMapFragment = null;
 
@@ -87,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     private Marker Bpoint = new Marker();
     private LatLng GPSvalue;
     private static int takeoffAltitude = 3;
+    private int interval = 5;
 
     private static boolean MapLockable = false;
     private boolean Toggle = false;
@@ -106,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     private int AltitudeCount = 0;
     private int ModeSelectCount = 0;
     private static int MissionButtonCount = 0;
+
 
     private int selectPin = 0;
 
@@ -134,6 +146,8 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         setContentView(R.layout.activity_main);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
+        locationSource = new FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE);
+
         final Context context = getApplicationContext();
         this.controlTower = new ControlTower(context);
         this.drone = new Drone(context);
@@ -142,6 +156,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         this.modeSelector.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                ((TextView) parent.getChildAt(0)).setTextColor(0xFF00FF00);
                 onFlightModeSelected(view);
             }
 
@@ -456,7 +471,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         MapLockCount = 0;
 
         mapLockSelect.setText("맵 잠금");
-        mapLockSelect.setBackgroundColor(0xFFED901F);
+        mapLockSelect.setBackground(ContextCompat.getDrawable(this, R.drawable.btnyellow));
 
         MapLockable = true;
     }
@@ -482,13 +497,12 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         MapLockCount = 0;
 
         mapLockSelect.setText("맵 이동");
-        mapLockSelect.setBackgroundColor(0xFF49290F);
+        mapLockSelect.setBackground(ContextCompat.getDrawable(this, R.drawable.btnbrown));
 
         MapLockable = false;
     }
 
     public void onMapselectButton(View view){
-
         Button generalMap = (Button) findViewById(R.id.generalMap);
         Button topographicalMap = (Button) findViewById(R.id.topographicalMap);
         Button satelliteMap = (Button) findViewById(R.id.satelliteMap);
@@ -519,13 +533,13 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         satelliteMap.setVisibility(View.INVISIBLE);
         MapSelectCount = 0;
 
-        generalMap.setBackgroundColor(0xFFED901F);
-        topographicalMap.setBackgroundColor(0xFF49290F);
-        satelliteMap.setBackgroundColor(0xFF49290F);
+        generalMap.setBackground(ContextCompat.getDrawable(this, R.drawable.btnyellow));
+        topographicalMap.setBackground(ContextCompat.getDrawable(this, R.drawable.btnbrown));
+        satelliteMap.setBackground(ContextCompat.getDrawable(this, R.drawable.btnbrown));
 
         mMap.setMapType(NaverMap.MapType.Basic);
         mapSelect.setText("일반지도");
-        mapSelect.setBackgroundColor(0xFFED901F);
+        mapSelect.setBackground(ContextCompat.getDrawable(this, R.drawable.btnyellow));
     }
 
     public void topographicalMap(View view){
@@ -539,13 +553,13 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         satelliteMap.setVisibility(View.INVISIBLE);
         MapSelectCount = 0;
 
-        generalMap.setBackgroundColor(0xFF49290F);
-        topographicalMap.setBackgroundColor(0xFFED901F);
-        satelliteMap.setBackgroundColor(0xFF49290F);
+        generalMap.setBackground(ContextCompat.getDrawable(this, R.drawable.btnbrown));
+        topographicalMap.setBackground(ContextCompat.getDrawable(this, R.drawable.btnyellow));
+        satelliteMap.setBackground(ContextCompat.getDrawable(this, R.drawable.btnbrown));
 
         mMap.setMapType(NaverMap.MapType.Terrain);
         mapSelect.setText("지형도");
-        mapSelect.setBackgroundColor(0xFFED901F);
+        mapSelect.setBackground(ContextCompat.getDrawable(this, R.drawable.btnyellow));
     }
 
     public void satelliteMap(View view){
@@ -559,13 +573,13 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         satelliteMap.setVisibility(View.INVISIBLE);
         MapSelectCount = 0;
 
-        generalMap.setBackgroundColor(0xFF49290F);
-        topographicalMap.setBackgroundColor(0xFF49290F);
-        satelliteMap.setBackgroundColor(0xFFED901F);
+        generalMap.setBackground(ContextCompat.getDrawable(this, R.drawable.btnbrown));
+        topographicalMap.setBackground(ContextCompat.getDrawable(this, R.drawable.btnbrown));
+        satelliteMap.setBackground(ContextCompat.getDrawable(this, R.drawable.btnyellow));
 
         mMap.setMapType(NaverMap.MapType.Satellite);
         mapSelect.setText("위성지도");
-        mapSelect.setBackgroundColor(0xFFED901F);
+        mapSelect.setBackground(ContextCompat.getDrawable(this, R.drawable.btnyellow));
     }
 
     public void LandmarkSelectButton(View view){
@@ -595,7 +609,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         mMap.setLayerGroupEnabled(NaverMap.LAYER_GROUP_CADASTRAL, true);
         LandmarkSelect.setText("지적도On");
-        LandmarkSelect.setBackgroundColor(0xFFED901F);
+        LandmarkSelect.setBackground(ContextCompat.getDrawable(this, R.drawable.btnyellow));
     }
 
     public void LandmarkOff(View view){
@@ -609,7 +623,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         mMap.setLayerGroupEnabled(NaverMap.LAYER_GROUP_CADASTRAL, false);
         LandmarkSelect.setText("지적도Off");
-        LandmarkSelect.setBackgroundColor(0xFF49290F);
+        LandmarkSelect.setBackground(ContextCompat.getDrawable(this, R.drawable.btnbrown));
     }
 
     public void clearBtn(View view){
@@ -887,6 +901,33 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         }
     }
 
+    public void setMissionInterval(View view){
+
+        final EditText edittext = new EditText(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle("간격설정");
+        builder.setMessage("간격 길이를 입력해주세요.");
+        builder.setView(edittext);
+        builder.setPositiveButton("입력",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        interval = Integer.parseInt(edittext.getText().toString());
+                        alertUser("간격을 " + edittext.getText() + "m로 설정완료");
+                    }
+                });
+        builder.setNegativeButton("취소",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+        builder.show();
+
+    }
+
+
+
     public void altitudeView(View view){
         Button up = (Button) findViewById(R.id.upAltitude);
         Button down = (Button) findViewById(R.id.downAltitude);
@@ -971,6 +1012,8 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             }
             else if(MissionButtonCount == 2) {
                 if (selectPin == 0) {
+                    mPath.clear();
+                    mPolygon.clear();
                     nApLat = new LatLng(coord.latitude, coord.longitude);
                     ApLat = new LatLong(coord.latitude, coord.longitude);
                     Apoint.setPosition(coord);
@@ -992,7 +1035,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
                     mPath.add(nBpLat);
                     mPolygon.add(nBpLat);
-                    for (int i = 5; i <= 50; i += 5) {
+                    for (int i = interval; i <= interval*10; i += interval) {
                         if (Toggle == false) {
                             mPath.add(new LatLng(MathUtils.newCoordFromBearingAndDistance(BpLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, i).getLatitude(), MathUtils.newCoordFromBearingAndDistance(BpLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, i).getLongitude()));
                             mPath.add(new LatLng(MathUtils.newCoordFromBearingAndDistance(ApLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, i).getLatitude(), MathUtils.newCoordFromBearingAndDistance(ApLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, i).getLongitude()));
@@ -1004,8 +1047,8 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                         }
                     }
 
-                    mPolygon.add(new LatLng(MathUtils.newCoordFromBearingAndDistance(BpLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, 50).getLatitude(), MathUtils.newCoordFromBearingAndDistance(BpLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, 50).getLongitude()));
-                    mPolygon.add(new LatLng(MathUtils.newCoordFromBearingAndDistance(ApLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, 50).getLatitude(), MathUtils.newCoordFromBearingAndDistance(ApLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, 50).getLongitude()));
+                    mPolygon.add(new LatLng(MathUtils.newCoordFromBearingAndDistance(BpLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, interval*10).getLatitude(), MathUtils.newCoordFromBearingAndDistance(BpLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, interval*10).getLongitude()));
+                    mPolygon.add(new LatLng(MathUtils.newCoordFromBearingAndDistance(ApLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, interval*10).getLatitude(), MathUtils.newCoordFromBearingAndDistance(ApLat, MathUtils.getHeadingFromCoordinates(ApLat, BpLat) + 90, interval*10).getLongitude()));
 
                     Log.d("Array : ", String.valueOf(mPolygon));
 
@@ -1018,7 +1061,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                     pinPolyline.setColor(Color.WHITE);
                     pinPolyline.setMap(mMap);
 
-
                     Toast.makeText(getApplicationContext(), "각도 : " + (MathUtils.getHeadingFromCoordinates(ApLat, BpLat)), Toast.LENGTH_SHORT).show();
                 }
             }
@@ -1027,8 +1069,22 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,  @NonNull int[] grantResults) {
+        if (locationSource.onRequestPermissionsResult(
+                requestCode, permissions, grantResults)) {
+            return;
+        }
+        super.onRequestPermissionsResult(
+                requestCode, permissions, grantResults);
+    }
+
+    @Override
     public void onMapReady(@NonNull NaverMap naverMap) {
         mMap = naverMap;
+
+        naverMap.setLocationSource(locationSource);
+        naverMap.setLocationTrackingMode(LocationTrackingMode.NoFollow);
 
         //각 장소별 경위도
         ArrayList<LatLng> Location  = new ArrayList<LatLng>();
